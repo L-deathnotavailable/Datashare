@@ -1,0 +1,12 @@
+api_platform:
+    title: DataShare API
+    description: Inscription, connexion JWT et profil utilisateur.
+    version: 1.0.0
+    enable_re_doc: false
+    swagger:
+        swagger_ui_extra_configuration:
+            persistAuthorization: false
+    defaults:
+        stateless: true
+        cache_headers:
+            vary: ['Content-Type', 'Authorization', 'Origin']

@@ -1,0 +1,12 @@
+framework:
+    secret: '%env(APP_SECRET)%'
+    session: false
+    rate_limiter:
+        registration:
+            policy: fixed_window
+            limit: 5
+            interval: '15 minutes'
+
+when@test:
+    framework:
+        test: true

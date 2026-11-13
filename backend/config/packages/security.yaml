@@ -1,0 +1,35 @@
+security:
+    password_hashers:
+        App\Entity\User:
+            algorithm: sodium
+
+    providers:
+        app_users:
+            entity:
+                class: App\Entity\User
+
+    firewalls:
+        login:
+            pattern: ^/api/auth/login$
+            stateless: true
+            provider: app_users
+            json_login:
+                check_path: api_login
+                username_path: email
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: App\Security\LoginFailureHandler
+            login_throttling:
+                max_attempts: 5
+                interval: '1 minute'
+        api:
+            pattern: ^/api
+            stateless: true
+            provider: app_users
+            jwt: ~
+
+    access_control:
+        - { path: ^/api/docs(?:\.|$), roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/(register|login)$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/health$, roles: PUBLIC_ACCESS }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

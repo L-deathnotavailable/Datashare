@@ -1,0 +1,45 @@
+import { expect, test } from '@playwright/test'
+
+test('inscription, connexion et déconnexion', async ({ page }, testInfo) => {
+  const email = `parcours-${Date.now()}@example.test`
+  await page.goto('/inscription')
+  await page.getByLabel('Email', { exact: true }).fill(email)
+  await page.getByLabel('Mot de passe', { exact: true }).fill('Parcours-2026!')
+  await page.getByLabel('Verification du mot de passe').fill('Parcours-2026!')
+  await page.getByRole('button', { name: 'Créer mon compte' }).click()
+  await expect(page.getByRole('status')).toContainText('Votre compte est créé')
+  await page.getByLabel('Email', { exact: true }).fill(email)
+  await page.getByLabel('Mot de passe', { exact: true }).fill('Parcours-2026!')
+  await page.getByRole('button', { name: 'Connexion' }).click()
+  await expect(page.getByRole('heading', { name: 'Bienvenue chez vous.' })).toBeVisible()
+  await expect(page.getByText(email)).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('mon-espace.png'), fullPage: true })
+  expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([])
+  expect(await page.evaluate(() => Object.keys(sessionStorage))).toEqual([])
+  await page.getByRole('button', { name: 'Se déconnecter' }).click()
+  await expect(page).toHaveURL(/\/connexion$/)
+  await page.goto('/mon-espace')
+  await expect(page).toHaveURL(/\/connexion$/)
+})
+
+test('refus des identifiants incorrects', async ({ page }) => {
+  await page.goto('/connexion')
+  await page.getByLabel('Email', { exact: true }).fill(`absent-${Date.now()}@example.test`)
+  await page.getByLabel('Mot de passe', { exact: true }).fill('Mauvais-2026!')
+  await page.getByRole('button', { name: 'Connexion' }).click()
+  await expect(page.getByRole('alert')).toContainText('incorrect')
+  await expect(page).toHaveURL(/\/connexion$/)
+})
+
+test('confirmation du mot de passe et affichage mobile', async ({ page }, testInfo) => {
+  await page.goto('/inscription')
+  await expect(page.getByRole('heading', { name: 'Créer un compte' })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('inscription.png'), fullPage: true })
+  await page.getByLabel('Email', { exact: true }).fill('confirmation@example.test')
+  await page.getByLabel('Mot de passe', { exact: true }).fill('Parcours-2026!')
+  await page.getByLabel('Verification du mot de passe').fill('Different-2026!')
+  await page.getByRole('button', { name: 'Créer mon compte' }).click()
+  await expect(page.getByRole('alert')).toContainText('identiques')
+  await expect(page.getByLabel('Mot de passe', { exact: true })).toHaveAttribute('type', 'password')
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+})
