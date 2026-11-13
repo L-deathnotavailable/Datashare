@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "DataShare local",
+      "Group": "DataShare",
+      "Host": "database",
+      "Port": 5432,
+      "MaintenanceDB": "datashare",
+      "Username": "datashare",
+      "SSLMode": "prefer"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+Docorga
+AGENTS.md
+agents.md
+.git
+.env
+.env.*.local
+**/node_modules
+**/vendor
+**/var
+**/config/jwt/*.pem
