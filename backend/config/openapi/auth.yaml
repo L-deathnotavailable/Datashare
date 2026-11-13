@@ -6,6 +6,43 @@ info:
 servers:
   - url: http://localhost:8088/api
 paths:
+  /files:
+    post:
+      operationId: uploadFile
+      summary: Déposer un fichier avec son compte
+      description: Un fichier non vide de 1 000 000 000 octets maximum. Expiration de 7 jours par défaut. Le lien de partage est généré mais sa page sera implémentée avec US02.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+                expiresInDays: { type: integer, minimum: 1, maximum: 7, default: 7 }
+      responses:
+        '201':
+          description: Fichier enregistré
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, originalName, sizeBytes, mimeType, expiresAt, shareUrl]
+                properties:
+                  id: { type: string, format: uuid }
+                  originalName: { type: string }
+                  sizeBytes: { type: integer, format: int64 }
+                  mimeType: { type: string }
+                  expiresAt: { type: string, format: date-time }
+                  shareUrl: { type: string, format: uri }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '413': { description: Taille maximale dépassée }
+        '415': { description: Requête attendue en multipart/form-data }
+        '422':
+          description: Fichier absent ou interdit, nom ou expiration invalide
+        '503': { description: Stockage indisponible }
   /auth/register:
     post:
       operationId: register

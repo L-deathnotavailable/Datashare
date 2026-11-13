@@ -45,7 +45,13 @@ Toutes les commandes sont limitées au projet `datashare`. Les volumes conserven
 
 Créer un compte sur `/inscription`, puis se connecter sur `/connexion`. Le mot de passe comporte au moins 8 caractères et est haché avec Argon2id. Le JWT expire après une heure. Il reste en mémoire du navigateur : actualiser ou fermer la page nécessite une nouvelle connexion. La déconnexion efface la session locale ; un JWT précédemment copié reste valide jusqu'à son expiration.
 
-Les fonctions de dépôt et de téléchargement ne sont pas encore implémentées.
+## Dépôt de fichiers
+
+Le script d'installation démarre SeaweedFS et crée les identifiants S3 dans le fichier local `.env` si nécessaire. Le bucket privé `datashare-files` est accessible via le réseau Docker. Les données sont conservées dans le volume `datashare_seaweed_data`.
+
+Dans Swagger, après authentification, ouvrir `POST /api/files`, choisir un fichier dans le champ `file` et exécuter la requête. Le champ facultatif `expiresInDays` accepte les entiers de 1 à 7 et vaut 7 par défaut. La limite est de 1 000 000 000 octets. Le serveur refuse les fichiers vides et certains formats exécutables ou actifs, selon l'extension et le type détecté.
+
+La réponse 201 fournit les métadonnées et le lien de partage. La page publique de consultation et la route de téléchargement seront ajoutées avec US02. Le service `expiry-worker` tente de supprimer les objets et les métadonnées expirés toutes les minutes quand Docker tourne.
 
 ## Organisation
 

@@ -27,12 +27,21 @@ if (!(Test-Path -LiteralPath $backendEnvPath)) {
     Copy-Item -LiteralPath (Join-Path $projectRoot 'backend\.env.example') -Destination $backendEnvPath
 }
 
+$currentEnv = [IO.File]::ReadAllText($envPath)
+foreach ($key in @('S3_ACCESS_KEY', 'S3_SECRET_KEY')) {
+    if ($currentEnv -notmatch "(?m)^$key=") {
+        $currentEnv += "`n$key=$(New-LocalSecret)`n"
+    }
+}
+[IO.File]::WriteAllText($envPath, $currentEnv, [Text.UTF8Encoding]::new($false))
+
 Invoke-Compose config --quiet
 Invoke-Compose build php
-Invoke-Compose up -d database pgadmin
+Invoke-Compose up -d database pgadmin seaweedfs
 Invoke-Compose run --rm php composer install --no-interaction
 Invoke-Compose run --rm php php bin/console lexik:jwt:generate-keypair --skip-if-exists
 Invoke-Compose run --rm php php bin/console doctrine:migrations:migrate --no-interaction
 Invoke-Compose run --rm --no-deps frontend npm ci
 Invoke-Compose up -d --wait
+Invoke-Compose exec -T web nginx -s reload
 Write-Host 'DataShare démarré. Consulter APP_PORT et PGADMIN_PORT dans .env pour les adresses locales.'

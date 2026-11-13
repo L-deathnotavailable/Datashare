@@ -43,7 +43,11 @@ final class AuthOpenApiFactory implements OpenApiFactoryInterface
                 $body = $definition['requestBody'] ?? null;
                 $operation = new Model\Operation(
                     operationId: $definition['operationId'],
-                    tags: [$path === '/health' ? 'État du service' : 'Authentification'],
+                    tags: [match ($path) {
+                        '/health' => 'État du service',
+                        '/files' => 'Fichiers',
+                        default => 'Authentification',
+                    }],
                     responses: $definition['responses'],
                     summary: $definition['summary'],
                     description: $definition['description'] ?? null,
